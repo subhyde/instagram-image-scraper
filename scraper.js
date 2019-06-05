@@ -1,10 +1,17 @@
-const fs = require('fs');
-const puppeteer = require('puppeteer');
+
+
+//html functions
+//document.getElementById('instagram').addEventListener("click", function () {
+    const fs = require('fs');
+    const puppeteer = require('puppeteer');
+    const zipFolder = require('zip-a-folder');
+   let instagramurl = 'https://www.instagram.com/wickedclothes/';
+       //document.getElementById('instagram').value;
 
 
 (async () =>{
 
-let instagramurl = 'https://www.instagram.com/ethanjohnsonnn/';
+
 
 let browser = await puppeteer.launch(({headless:false}));
 let page = await browser.newPage();
@@ -41,6 +48,18 @@ return{
     });
 
 console.log(data);
+    class ZipAFolder {
+
+        static main() {
+            zipFolder.zipFolder('images', 'test/test.zip‎', function(err) {
+                if(err) {
+                    console.log('Something went wrong!', err);
+                }
+            });
+        }
+    }
+
+    ZipAFolder.main();
 await browser.close();
 
 
@@ -61,7 +80,10 @@ async function autoScroll(page){
                     clearInterval(timer);
                     resolve();
                 }
-            }, 100);
+            }, 400);
         });
     });
 }
+
+//});
+
