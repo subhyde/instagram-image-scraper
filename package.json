@@ -1,15 +1,16 @@
 {
   "name": "instagram-image-scraper",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.2",
+  "description": "Basic instagram photo scraper",
   "main": "scraper.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Ethan Johnson",
   "license": "ISC",
   "dependencies": {
+    "fs-extra": "^8.0.1",
     "puppeteer": "^1.17.0",
     "zip-a-folder": "0.0.8"
   }
