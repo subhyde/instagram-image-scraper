@@ -1,6 +1,6 @@
 {
   "name": "instagram-image-scraper",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Basic instagram photo scraper",
   "main": "scraper.js",
   "scripts": {
@@ -13,5 +13,6 @@
     "fs-extra": "^8.0.1",
     "puppeteer": "^1.17.0",
     "zip-a-folder": "0.0.8"
-  }
+  },
+  "devDependencies": {}
 }

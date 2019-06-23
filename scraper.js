@@ -5,24 +5,21 @@ const rl = readline.createInterface({
     output: process.stdout,
 });
 
-    const fsExtra = require('fs-extra'); // used to delete images after zip
-    const fs = require('fs');
-    const puppeteer = require('puppeteer'); // used to grab images and autoscroll
-    const zipFolder = require('zip-a-folder'); // used to zip files for download
+const fsExtra = require('fs-extra');
+const fs = require('fs');
+const puppeteer = require('puppeteer'); // used to grab images and autoscroll
+const zipFolder = require('zip-a-folder'); // used to zip files for download
 
 
+startscreen();
 
-startscreen(); //starts program
-
-
-function startscreen(){
-    rl.question('Choose a selection:\nPress(1) Start scrape\nPress(2) Info\n',answer => {
-        if(answer === '1'){
-
+function startscreen() {
+    rl.question('Choose a selection:\nPress(1) Start scrape\nPress(2) Info\n', answer => {
+        if (answer === '1') {
 
             getusername()
         }
-        if(answer === '2'){
+        if (answer === '2') {
             console.log("Program Version 0.0.2\n" +
                 "Created by Ethan Johnson\n" +
                 "---tips---\n" +
@@ -35,131 +32,108 @@ function startscreen(){
 }
 
 
-
-function getusername(){
+function getusername() {
 
     rl.question('Please Enter the Username of the Instagram Account you would like to scrape:\n', answer => {
 
-    let instagramurl = "https://instagram.com/"+answer+"/";
+        let instagramurl = "http://instagram.com/" + answer + "/";
         console.log("scraping images...");
         rl.close();
         startscrape(instagramurl);
 
+    });
 
-});
 
-
-function startscrape(instagramurl) {
-    (async () => {
+    function startscrape(instagramurl) {
+        (async () => {
 
 
 //launches the headless browser
-        let browser = await puppeteer.launch(({headless: false}));
-        let page = await browser.newPage();
-        let counter = 0;
+            let browser = await puppeteer.launch(({headless: true}));
+            let page = await browser.newPage();
+            let counter = 0;
+
+
 //finds all the files that contain jpeg in their url and saves them to the image folder
+            page.on('response', async (response) => {
+
+                const matches = /.*\.fbcdn*....$/.exec(response.url());
+                if (matches) {
 
 
+                    const buffer = await response.buffer();
+                    fs.writeFileSync(`images/image-${counter}.jpeg`, buffer, 'base64');
 
-        await page.goto(instagramurl);
+                    counter += 1; //adds +1 to each file saved
+                    console.log("image: " + counter + ' saved'); // logs every image saved
+                }
+            });
 
 
+            await page.goto(instagramurl);
 //waits for page to fully load before scrolling and collecting the images
-
-        await page.waitFor(1000);
-        await autoScroll(page);
-
-
-//grabbing data from the insagrams user profile: name, followers ect.
+            await page.waitFor(1000);
+            await autoScroll(page);
 
 
-
-       await page.evaluate(() => {
-
-            //doesnt currently work, finding a work around
-
-           // if (document.querySelector('.error-container')) {
-           //     console.log("sorry this is an invalid username");
-             //   getusername();
-          //  }
+//grabbing data from the instagrams user profile: name, followers ect.
 
 
-            let username = document.querySelector('._7UhW9').innerText;
+            await page.evaluate(() => {
 
-               // let name = document.querySelector('.rhpdm').innerText;
-
-
-
-            return {
-                username
-
-            }
-
-        });
-        page.on('response', async (response) => {
-
-            const matches = /.*\.fbcdn*....$/.exec(response.url());
-            if (matches) {
+                let username = document.querySelector('._7UhW9').innerText;
 
 
-                const buffer = await response.buffer();
-                fs.writeFileSync(`images/image-${counter}.jpeg`, buffer, 'base64'); //adds the jpeg extension to every image saved
+                return {
+                    username,
 
-                counter += 1; //adds +1 to each file saved
-                console.log("image: " + counter + ' saved'); // logs every image saved
+                }
 
-            }
-        });
-
-
+            });
 
 
 //zips the files into the local folder
 
-        class ZipAFolder {
+            class ZipAFolder {
 
-            static main() {
-                //gets the username and creates a zip from it
-                console.log("zipping images to a file...");
-                let zipname = (instagramurl.split('/'));
-                zipFolder.zipFolder('images', `zip/${zipname[3]}.zip`, function (err) {
-                    if (err) {
-                        console.log('Something went wrong!', err);
+                static main() {
+                    //gets the username and creates a zip from it
+                    console.log("zipping images to a file...");
+                    let zipname = (instagramurl.split('/'));
+                    zipFolder.zipFolder('images', `zip/${zipname[3]}.zip`, function (err) {
+                        if (err) {
+                            console.log('Something went wrong!', err);
+                        }
+                    });
+                    console.log("done zipping!");
+                    console.log("deleting leftover images...");
+                    setTimeout(cdelete, 10000);
+
+                    function cdelete() {
+                        fsExtra.emptyDirSync('images');
+
                     }
-                });
-                console.log("done zipping!");
-                console.log("deleting leftover images...");
-                setTimeout(cdelete, 10000);
-
-                function cdelete(){
-                    fsExtra.emptyDirSync('images');
-
                 }
             }
-        }
 
-        ZipAFolder.main();
-
-
-        await browser.close();
-        console.log("done!");
-        startscreen();
+            ZipAFolder.main();
 
 
-    })();
+            await browser.close();
+            console.log("done!");
+            startscreen();
 
 
+        })();
 
 
-}}
+    }
+}
 
 
-
-
-//auto scroll function, set to 400 || this is less fast but will work on most internet speeds
-async function autoScroll(page){
+//auto scroll function, set to 300 || this is less fast but will work on most internet speeds
+async function autoScroll(page) {
     await page.evaluate(async () => {
-
         await new Promise((resolve) => {
             let totalHeight = 0;
             let distance = 100;
@@ -168,14 +142,11 @@ async function autoScroll(page){
                 window.scrollBy(0, distance);
                 totalHeight += distance;
 
-                if(totalHeight >= scrollHeight){
+                if (totalHeight >= scrollHeight) {
                     clearInterval(timer);
                     resolve();
                 }
-
-            }, 400);
-
+            }, 300);
         });
     });
-
 }
